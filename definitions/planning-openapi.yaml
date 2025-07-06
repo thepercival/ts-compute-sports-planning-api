@@ -1,0 +1,281 @@
+openapi: 3.0.3
+info:
+  title: Sports Planning API
+  version: 1.0.0
+  license: 
+    name: GNU General Public License v3.0
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+servers: 
+  - url: "https://api.sportsscheduler.nl/v1" 
+security:
+  - ApiKeyAuth: []
+paths:
+  /planning:
+    post:
+      operationId: generatePlanning
+      summary: Generate a planning based on configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanningConfiguration"            
+      responses:
+        "200":
+          description: Planning result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Planning"              
+        "400":
+          description: Bad Request - Invalid input or malformed request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the bad request
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    PlanningConfiguration:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+          minItems: 1
+        sports:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sport"
+          minItems: 1
+        referees:        
+          type: array
+          items:
+            $ref: "#/components/schemas/Referee"
+        gameOrder:
+          $ref: "#/components/schemas/GamesDefaultOrderEnum"
+        maxNrOfGamesInARow:
+          type: object
+          nullable: true
+          properties:
+            withSelfReferee:
+              type: boolean
+            value:
+              type: integer
+      required:
+        - categories
+        - sports
+        - referees
+        - gameOrder
+    Planning:
+      type: object
+      properties:
+        planningConfiguration:
+          $ref: "#/components/schemas/PlanningConfiguration"
+        games:
+          type: array
+          items:
+            anyOf:
+            - $ref: "#/components/schemas/AgainstGame"
+            - $ref: "#/components/schemas/TogetherGame"
+          minItems: 1
+      required:
+        - planningConfiguration
+        - games
+    Category:
+      type: object
+      properties:
+        categoryNr:
+          type: integer
+        poules:
+          type: array
+          items: 
+            $ref: "#/components/schemas/Poule"
+          minItems: 1
+      required:
+        - categoryNr
+        - poules
+    Sport:
+      type: object
+      properties:
+        sportNr:
+          type: integer
+        nrOfCycles:
+          type: integer
+        seatEnum:
+          $ref: '#/components/schemas/SeatEnum'
+        nrOfRefereesPerGame:
+          type: integer
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/Field"            
+          minItems: 1
+        selfRefereeInfo:
+          type: object
+          nullable: true
+          properties:
+            selfReferee:
+              $ref: "#/components/schemas/SelfRefereeEnum"
+            nrOfSeatsPerGame:
+              type: integer
+          required:
+            - selfReferee
+            - nrOfSeatsPerGame
+      required:
+        - sportNr
+        - nrOfCycles
+        - seatEnum
+        - nrOfRefereesPerGame
+        - fields
+    AgainstSeat:
+      type: object
+      properties:
+        seatEnum:
+          $ref: "#/components/schemas/SeatEnum"
+        seatNr:
+          type: integer  
+      required:
+        - seatEnum
+        - seatNr
+    TogetherSeat:
+      type: object
+      properties:
+        seatNr:
+          type: integer
+        batchNr:
+          type: integer
+      required:
+        - seatNr
+        - batchNr
+    SeatEnum:
+      type: string
+      enum:
+        - HomeSeat
+        - AwaySeat
+        - NorthSeat
+        - SouthSeat
+        - WestSeat
+        - EastSeat
+    SelfRefereeEnum:
+      type: string
+      enum:
+        - SamePoule
+        - OtherPoules
+    GamesDefaultOrderEnum:
+      type: string
+      enum:
+        - CycleFirst
+        - PouleFirst
+    Field:
+      type: object
+      properties:
+        fieldNr:
+          type: integer
+        pouleFilters:
+          type: array
+          description: |
+            All poules will be used when:
+            - If no pouleFilters
+            - If no pouleNrs available
+            When pouleFilters are active all poules should be covered
+          items:
+            type: object
+            properties:
+              categoryNr:
+                type: integer                
+              pouleNrs:
+                type: array
+                items:
+                  type: integer
+      required:
+        - fieldNr
+        - pouleFilters
+    AgainstGame:
+      allOf:
+        - $ref: "#/components/schemas/GameProperties"
+      type: object
+      properties:
+        seats:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgainstSeat"
+        batchNr:
+          type: integer
+      required:
+        - batchNr
+        - seats
+
+    TogetherGame:    
+      allOf:
+        - $ref: "#/components/schemas/GameProperties"
+      type: object
+      properties:
+        seats:
+          type: array
+          items:
+            $ref: "#/components/schemas/TogetherSeat"
+    GameProperties:    
+      type: object
+      properties:
+        categoryNr:
+          type: integer
+        pouleNr:
+          type: integer
+        sportNr:
+          type: integer
+        fieldNr:
+          type: integer
+      required:
+        - categoryNr
+        - pouleNr
+        - sportNr
+        - fieldNr
+    Referee:
+      type: object
+      properties:
+        refereeNr:
+          type: integer
+        filters:
+          type: array
+          description: |
+            All poules will be used when:
+            - If no pouleFilters
+            - If no pouleNrs available
+            When pouleFilters are active all poules should be covered
+          items:
+            type: object
+            properties:
+              sportNr:
+                type: integer
+              categoryNr:
+                type: integer
+      required:
+        - refereeNr
+        - filters
+    Poule:
+      type: object
+      properties:
+        pouleNr:
+          type: integer
+        places:
+          type: array
+          description: |
+            The maximum difference between the greatest and smallest poule is always 1
+          example: |
+            [6,5]
+          items:
+            type: integer
+          minItems: 1
+      required:
+        - pouleNr
+        - places      

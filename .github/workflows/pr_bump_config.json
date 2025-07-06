@@ -1,0 +1,18 @@
+{
+  "base_branches": ["main"],
+  "categories": [
+    {
+      "labels": ["fix", "bug", "documentation"],
+      "semver_part": "patch"
+    },
+    {
+      "labels": ["feature", "enhancement", "a-custom-label"],
+      "semver_part": "minor"
+    },
+    {
+      "labels": ["major", "breaking", "milestone"],
+      "semver_part": "major"
+    }
+  ],
+  "ignore_labels": ["no release", "ignored"]
+}
