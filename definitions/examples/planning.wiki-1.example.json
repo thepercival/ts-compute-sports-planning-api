@@ -1,0 +1,36 @@
+{
+  "planningConfiguration": "substitute with link to planningConfiguration",
+  "againstGames": [
+    {
+      "categoryNr": 1,
+      "pouleNr": 1,
+      "sportNr": 1,
+      "seats": [
+        {
+          "name": "HomeSeat|AwaySeat|NorthSeat|SouthSeat|EastSeat|WestSeat",
+          "placeNr": 1
+        },
+        {
+          "name": "HomeSeat|AwaySeat|NorthSeat|SouthSeat|EastSeat|WestSeat",
+          "placeNr": 2
+        }
+      ],
+      "batchNr": 1,
+      "fieldNr": 1
+    }
+  ],
+  "togetherGames": [
+    {
+      "categoryNr": 1,
+      "pouleNr": 1,
+      "sportNr": 1,
+      "seats": [
+        {
+          "placeNr": 1,
+          "batchNr": 1
+        }
+      ],
+      "fieldNr": 1
+    }
+  ]  
+}

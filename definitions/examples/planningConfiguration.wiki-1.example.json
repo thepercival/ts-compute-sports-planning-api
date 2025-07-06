@@ -1,0 +1,105 @@
+{
+  "categories": [
+    {
+      "categoryNr": 1,
+      "poules": [6]
+    },
+    {
+      "categoryNr": 2,
+      "poules": [4, 4]
+    }
+  ],
+  "sports": [
+    {
+      "sportNr": 1,
+      "nrOfCycles": 1,
+      "seatType": "Together|HomeAway|NorthSouthEastWest",
+      "nrOfRefereesPerGame": 1,
+      "fields": [
+        {
+          "fieldNr": 1,
+          "pouleFilter": [
+            {
+              "categoryNr": 1,
+              "pouleNrs": [1]
+            }
+          ]
+        },
+        {
+          "fieldNr": 2,
+          "pouleFilter": [
+            {
+              "categoryNr": 1,
+              "pouleNrs": [2, 3, 4, 5]
+            }
+          ]
+        },
+        {
+          "fieldNr": 3,
+          "pouleFilter": [
+            {
+              "categoryNr": 2,
+              "pouleNrs": []
+            }
+          ]
+        },
+        {
+          "fieldNr": 4,
+          "pouleFilter": [
+            {
+              "categoryNr": null,
+              "pouleNrs": []
+            }
+          ]
+        }
+      ],
+      "selfReferee": null
+    },
+    {
+      "sportNr": 1,
+      "nrOfCycles": 1,
+      "seatType": "Together|HomeAway|NorthSouthEastWest",
+      "nrOfRefereesPerGame": 2,
+      "fields": [
+        {
+          "fieldNr": 1,
+          "pouleFilter": [
+            {
+              "categoryNr": null,
+              "pouleNrs": []
+            }
+          ]
+        },
+        {
+          "fieldNr": 2,
+          "pouleFilter": [
+            {
+              "categoryNr": null,
+              "pouleNrs": []
+            }
+          ]
+        }
+      ],
+      "selfRefereeInfo": {
+        "selfReferee": "OtherPoules",
+        "nrOfReferees": 1
+      }
+    }
+  ],
+  "referees": [
+    {
+      "refereeNr": 1,
+      "filter": [
+        {
+          "sportNr": 1,
+          "categoryNr": 1
+        }
+      ]
+    }
+  ],
+  "gameOrder": "CycleFirst|PouleFirst default CycleFirst",
+  "maxNrOfGamesInARow": {
+    "withSelfReferee": false,
+    "value": 3
+  }
+}
