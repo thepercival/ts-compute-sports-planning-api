@@ -1,5 +1,11 @@
 {
   "base_branches": ["main"],
+  "bump_files": [
+    {
+      "path": "Cargo.toml",
+      "prefix": "version = \""
+    }
+  ],
   "categories": [
     {
       "labels": ["fix", "bug", "documentation"],
