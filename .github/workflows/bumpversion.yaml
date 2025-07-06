@@ -1,9 +1,9 @@
 name: Apply semantic-release conventions to commit message
 
 on:
-  push:
+  pull_request:
     branches:
-      - master
+    - main
 
 jobs:
   build:
