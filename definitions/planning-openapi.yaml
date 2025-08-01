@@ -111,28 +111,24 @@ components:
         fields:
           type: array
           items:
-            $ref: "#/components/schemas/Field"
+            $ref: "#/components/schemas/PlanningField"
           minItems: 1
         selfRefereeInfo:
           type: object
           nullable: true
           properties:
-            selfReferee:
-              $ref: "#/components/schemas/SelfRefereeEnum"
+            selfRefereeScope:
+              $ref: "#/components/schemas/SelfRefereeScopeEnum"
             nrOfSeatsPerGame:
               type: integer
           required:
-            - selfReferee
+            - selfRefereeScope
             - nrOfSeatsPerGame
       required:
         - seatConfigEnum
         - nrOfCycles
         - nrOfRefereesPerGame
         - fields
-    AgainstSeat:
-      anyOf:
-        - $ref: "#/components/schemas/HomeAwayEnum"
-        - $ref: "#/components/schemas/NorthSouthEastWestEnum"
     TogetherSeat:
       type: object
       properties:
@@ -144,7 +140,7 @@ components:
         - seatNr
         - batchNr
 
-    Field:
+    PlanningField:
       type: object
       properties:
         fieldNr:
@@ -168,7 +164,7 @@ components:
       required:
         - fieldNr
         - pouleFilters
-    AgainstGame:
+    PlanningAgainstGame:
       allOf:
         - $ref: "#/components/schemas/GameProperties"
       type: object
@@ -176,23 +172,25 @@ components:
         seats:
           type: array
           items:
-            $ref: "#/components/schemas/AgainstSeat"
+            anyOf:
+              - $ref: "#/components/schemas/HomeAwayEnum"
+              - $ref: "#/components/schemas/NorthSouthEastWestEnum"
         batchNr:
           type: integer
       required:
         - batchNr
         - seats
 
-    TogetherGame:
+    PlanningTogetherGame:
       allOf:
-        - $ref: "#/components/schemas/GameProperties"
+        - $ref: "#/components/schemas/PlanningGameProperties"
       type: object
       properties:
         seats:
           type: array
           items:
             $ref: "#/components/schemas/TogetherSeat"
-    GameProperties:
+    PlanningGameProperties:
       type: object
       properties:
         categoryNr:
@@ -260,7 +258,7 @@ components:
         - SouthSeat
         - WestSeat
         - EastSeat
-    SelfRefereeEnum:
+    SelfRefereeScopeEnum:
       type: string
       enum:
         - SamePoule
@@ -275,3 +273,4 @@ components:
       enum:
         - HomeAwayEnum
         - NorthSouthEastWestEnum
+        - TogetherSeatConfig
