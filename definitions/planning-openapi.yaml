@@ -2,11 +2,11 @@ openapi: 3.0.3
 info:
   title: Sports Planning API
   version: 1.0.0
-  license: 
+  license:
     name: GNU General Public License v3.0
     url: https://www.gnu.org/licenses/gpl-3.0.html
-servers: 
-  - url: "https://api.sportsscheduler.nl/v1" 
+servers:
+  - url: "https://api.sportsscheduler.nl/v1"
 security:
   - ApiKeyAuth: []
 paths:
@@ -19,14 +19,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PlanningRequest"            
+              $ref: "#/components/schemas/PlanningConfiguration"
       responses:
         "200":
           description: Planning result
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Planning"              
+                $ref: "#/components/schemas/Planning"
         "400":
           description: Bad Request - Invalid input or malformed request
           content:
@@ -44,17 +44,6 @@ components:
       in: header
       name: Authorization
   schemas:
-    PlanningRequest:
-      type: object
-      properties:
-        timeoutAtNrOfSecounds:
-          type: number
-        configuration:
-          type: object
-          $ref: "#/components/schemas/PlanningConfiguration"
-      required:
-        - timeoutAtNrOfSecounds
-        - configuration
     PlanningConfiguration:
       type: object
       properties:
@@ -68,7 +57,7 @@ components:
           items:
             $ref: "#/components/schemas/PlanningSport"
           minItems: 1
-        referees:        
+        referees:
           type: array
           items:
             $ref: "#/components/schemas/PlanningReferee"
@@ -76,12 +65,12 @@ components:
           $ref: "#/components/schemas/GameOrderEnum"
         nrOfGamesInARow:
           type: integer
-          description: "between abs.Max(4) and abs.Min(-4)"          
       required:
         - categories
         - sports
         - referees
         - gameOrder
+        - nrOfGamesInARow
     Planning:
       type: object
       properties:
@@ -91,8 +80,8 @@ components:
           type: array
           items:
             anyOf:
-            - $ref: "#/components/schemas/PlanningAgainstGame"
-            - $ref: "#/components/schemas/PlanningTogetherGame"
+              - $ref: "#/components/schemas/AgainstGame"
+              - $ref: "#/components/schemas/TogetherGame"
           minItems: 1
       required:
         - planningConfiguration
@@ -104,7 +93,7 @@ components:
           type: integer
         poules:
           type: array
-          items: 
+          items:
             $ref: "#/components/schemas/PlanningPoule"
           minItems: 1
       required:
@@ -113,39 +102,49 @@ components:
     PlanningSport:
       type: object
       properties:
-        sportNr:
-          type: integer
+        seatConfigEnum:
+          $ref: "#/components/schemas/SeatConfigEnum"
         nrOfCycles:
           type: integer
-        seatEnum:
-          $ref: '#/components/schemas/SeatEnum'
         nrOfRefereesPerGame:
           type: integer
         fields:
           type: array
           items:
-            $ref: "#/components/schemas/PlanningField"            
+            $ref: "#/components/schemas/Field"
           minItems: 1
-        selfReferee: 
-          type: array
+        selfRefereeInfo:
+          type: object
           nullable: true
-          items:
-            type: object
-            properties: 
-              categoryNr:
-                type: integer
-              scope: 
-                $ref: "#/components/schemas/SelfRefereeScopeEnum"
-              nrOfReferees: 
-                type: integer
-        
+          properties:
+            selfReferee:
+              $ref: "#/components/schemas/SelfRefereeEnum"
+            nrOfSeatsPerGame:
+              type: integer
+          required:
+            - selfReferee
+            - nrOfSeatsPerGame
       required:
-        - sportNr
+        - seatConfigEnum
         - nrOfCycles
-        - seatEnum
         - nrOfRefereesPerGame
-        - fields    
-    PlanningField:
+        - fields
+    AgainstSeat:
+      anyOf:
+        - $ref: "#/components/schemas/HomeAwayEnum"
+        - $ref: "#/components/schemas/NorthSouthEastWestEnum"
+    TogetherSeat:
+      type: object
+      properties:
+        seatNr:
+          type: integer
+        batchNr:
+          type: integer
+      required:
+        - seatNr
+        - batchNr
+
+    Field:
       type: object
       properties:
         fieldNr:
@@ -161,7 +160,7 @@ components:
             type: object
             properties:
               categoryNr:
-                type: integer                
+                type: integer
               pouleNrs:
                 type: array
                 items:
@@ -169,9 +168,9 @@ components:
       required:
         - fieldNr
         - pouleFilters
-    PlanningAgainstGame:
+    AgainstGame:
       allOf:
-        - $ref: "#/components/schemas/PlanningGameProperties"
+        - $ref: "#/components/schemas/GameProperties"
       type: object
       properties:
         seats:
@@ -184,16 +183,16 @@ components:
         - batchNr
         - seats
 
-    PlanningTogetherGame:    
+    TogetherGame:
       allOf:
-        - $ref: "#/components/schemas/PlanningGameProperties"
+        - $ref: "#/components/schemas/GameProperties"
       type: object
       properties:
         seats:
           type: array
           items:
             $ref: "#/components/schemas/TogetherSeat"
-    PlanningGameProperties:    
+    GameProperties:
       type: object
       properties:
         categoryNr:
@@ -247,39 +246,21 @@ components:
           minItems: 1
       required:
         - pouleNr
-        - places      
+        - places
 
-    # ts-sports-basics
-    AgainstSeat:
-      type: object
-      properties:
-        seatEnum:
-          $ref: "#/components/schemas/SeatEnum"
-        seatNr:
-          type: integer  
-      required:
-        - seatEnum
-        - seatNr
-    TogetherSeat:
-      type: object
-      properties:
-        seatNr:
-          type: integer
-        batchNr:
-          type: integer
-      required:
-        - seatNr
-        - batchNr
-    SeatEnum:
+    HomeAwayEnum:
       type: string
       enum:
         - HomeSeat
         - AwaySeat
+    NorthSouthEastWestEnum:
+      type: string
+      enum:
         - NorthSeat
         - SouthSeat
         - WestSeat
         - EastSeat
-    SelfRefereeScopeEnum:
+    SelfRefereeEnum:
       type: string
       enum:
         - SamePoule
@@ -289,3 +270,8 @@ components:
       enum:
         - CycleFirst
         - PouleFirst
+    SeatConfigEnum:
+      type: string
+      enum:
+        - HomeAwayEnum
+        - NorthSouthEastWestEnum
