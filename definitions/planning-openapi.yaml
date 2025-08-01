@@ -19,7 +19,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PlanningConfiguration"            
+              $ref: "#/components/schemas/PlanningRequest"            
       responses:
         "200":
           description: Planning result
@@ -44,33 +44,39 @@ components:
       in: header
       name: Authorization
   schemas:
+    PlanningRequest:
+      type: object
+      properties:
+        timeoutAtNrOfSecounds:
+          type: number
+        configuration:
+          type: object
+          $ref: "#/components/schemas/PlanningConfiguration"
+      required:
+        - timeoutAtNrOfSecounds
+        - configuration
     PlanningConfiguration:
       type: object
       properties:
         categories:
           type: array
           items:
-            $ref: "#/components/schemas/Category"
+            $ref: "#/components/schemas/PlanningCategory"
           minItems: 1
         sports:
           type: array
           items:
-            $ref: "#/components/schemas/Sport"
+            $ref: "#/components/schemas/PlanningSport"
           minItems: 1
         referees:        
           type: array
           items:
-            $ref: "#/components/schemas/Referee"
+            $ref: "#/components/schemas/PlanningReferee"
         gameOrder:
-          $ref: "#/components/schemas/GamesDefaultOrderEnum"
-        maxNrOfGamesInARow:
-          type: object
-          nullable: true
-          properties:
-            withSelfReferee:
-              type: boolean
-            value:
-              type: integer
+          $ref: "#/components/schemas/GameOrderEnum"
+        nrOfGamesInARow:
+          type: integer
+          description: "between abs.Max(4) and abs.Min(-4)"          
       required:
         - categories
         - sports
@@ -85,13 +91,13 @@ components:
           type: array
           items:
             anyOf:
-            - $ref: "#/components/schemas/AgainstGame"
-            - $ref: "#/components/schemas/TogetherGame"
+            - $ref: "#/components/schemas/PlanningAgainstGame"
+            - $ref: "#/components/schemas/PlanningTogetherGame"
           minItems: 1
       required:
         - planningConfiguration
         - games
-    Category:
+    PlanningCategory:
       type: object
       properties:
         categoryNr:
@@ -99,12 +105,12 @@ components:
         poules:
           type: array
           items: 
-            $ref: "#/components/schemas/Poule"
+            $ref: "#/components/schemas/PlanningPoule"
           minItems: 1
       required:
         - categoryNr
         - poules
-    Sport:
+    PlanningSport:
       type: object
       properties:
         sportNr:
@@ -118,25 +124,132 @@ components:
         fields:
           type: array
           items:
-            $ref: "#/components/schemas/Field"            
+            $ref: "#/components/schemas/PlanningField"            
           minItems: 1
-        selfRefereeInfo:
-          type: object
+        selfReferee: 
+          type: array
           nullable: true
-          properties:
-            selfReferee:
-              $ref: "#/components/schemas/SelfRefereeEnum"
-            nrOfSeatsPerGame:
-              type: integer
-          required:
-            - selfReferee
-            - nrOfSeatsPerGame
+          items:
+            type: object
+            properties: 
+              categoryNr:
+                type: integer
+              scope: 
+                $ref: "#/components/schemas/SelfRefereeScopeEnum"
+              nrOfReferees: 
+                type: integer
+        
       required:
         - sportNr
         - nrOfCycles
         - seatEnum
         - nrOfRefereesPerGame
-        - fields
+        - fields    
+    PlanningField:
+      type: object
+      properties:
+        fieldNr:
+          type: integer
+        pouleFilters:
+          type: array
+          description: |
+            All poules will be used when:
+            - If no pouleFilters
+            - If no pouleNrs available
+            When pouleFilters are active all poules should be covered
+          items:
+            type: object
+            properties:
+              categoryNr:
+                type: integer                
+              pouleNrs:
+                type: array
+                items:
+                  type: integer
+      required:
+        - fieldNr
+        - pouleFilters
+    PlanningAgainstGame:
+      allOf:
+        - $ref: "#/components/schemas/PlanningGameProperties"
+      type: object
+      properties:
+        seats:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgainstSeat"
+        batchNr:
+          type: integer
+      required:
+        - batchNr
+        - seats
+
+    PlanningTogetherGame:    
+      allOf:
+        - $ref: "#/components/schemas/PlanningGameProperties"
+      type: object
+      properties:
+        seats:
+          type: array
+          items:
+            $ref: "#/components/schemas/TogetherSeat"
+    PlanningGameProperties:    
+      type: object
+      properties:
+        categoryNr:
+          type: integer
+        pouleNr:
+          type: integer
+        sportNr:
+          type: integer
+        fieldNr:
+          type: integer
+      required:
+        - categoryNr
+        - pouleNr
+        - sportNr
+        - fieldNr
+    PlanningReferee:
+      type: object
+      properties:
+        refereeNr:
+          type: integer
+        filters:
+          type: array
+          description: |
+            All poules will be used when:
+            - If no pouleFilters
+            - If no pouleNrs available
+            When pouleFilters are active all poules should be covered
+          items:
+            type: object
+            properties:
+              sportNr:
+                type: integer
+              categoryNr:
+                type: integer
+      required:
+        - refereeNr
+        - filters
+    PlanningPoule:
+      type: object
+      properties:
+        pouleNr:
+          type: integer
+        places:
+          type: array
+          description: |
+            The maximum difference between the greatest and smallest poule is always 1
+          example: |
+            [6,5]
+          items:
+            type: integer
+          minItems: 1
+      required:
+        - pouleNr
+        - places      
+
+    # ts-sports-basics
     AgainstSeat:
       type: object
       properties:
@@ -166,116 +279,13 @@ components:
         - SouthSeat
         - WestSeat
         - EastSeat
-    SelfRefereeEnum:
+    SelfRefereeScopeEnum:
       type: string
       enum:
         - SamePoule
         - OtherPoules
-    GamesDefaultOrderEnum:
+    GameOrderEnum:
       type: string
       enum:
         - CycleFirst
         - PouleFirst
-    Field:
-      type: object
-      properties:
-        fieldNr:
-          type: integer
-        pouleFilters:
-          type: array
-          description: |
-            All poules will be used when:
-            - If no pouleFilters
-            - If no pouleNrs available
-            When pouleFilters are active all poules should be covered
-          items:
-            type: object
-            properties:
-              categoryNr:
-                type: integer                
-              pouleNrs:
-                type: array
-                items:
-                  type: integer
-      required:
-        - fieldNr
-        - pouleFilters
-    AgainstGame:
-      allOf:
-        - $ref: "#/components/schemas/GameProperties"
-      type: object
-      properties:
-        seats:
-          type: array
-          items:
-            $ref: "#/components/schemas/AgainstSeat"
-        batchNr:
-          type: integer
-      required:
-        - batchNr
-        - seats
-
-    TogetherGame:    
-      allOf:
-        - $ref: "#/components/schemas/GameProperties"
-      type: object
-      properties:
-        seats:
-          type: array
-          items:
-            $ref: "#/components/schemas/TogetherSeat"
-    GameProperties:    
-      type: object
-      properties:
-        categoryNr:
-          type: integer
-        pouleNr:
-          type: integer
-        sportNr:
-          type: integer
-        fieldNr:
-          type: integer
-      required:
-        - categoryNr
-        - pouleNr
-        - sportNr
-        - fieldNr
-    Referee:
-      type: object
-      properties:
-        refereeNr:
-          type: integer
-        filters:
-          type: array
-          description: |
-            All poules will be used when:
-            - If no pouleFilters
-            - If no pouleNrs available
-            When pouleFilters are active all poules should be covered
-          items:
-            type: object
-            properties:
-              sportNr:
-                type: integer
-              categoryNr:
-                type: integer
-      required:
-        - refereeNr
-        - filters
-    Poule:
-      type: object
-      properties:
-        pouleNr:
-          type: integer
-        places:
-          type: array
-          description: |
-            The maximum difference between the greatest and smallest poule is always 1
-          example: |
-            [6,5]
-          items:
-            type: integer
-          minItems: 1
-      required:
-        - pouleNr
-        - places      
