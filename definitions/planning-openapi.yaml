@@ -80,8 +80,8 @@ components:
           type: array
           items:
             anyOf:
-              - $ref: "#/components/schemas/AgainstGame"
-              - $ref: "#/components/schemas/TogetherGame"
+              - $ref: "#/components/schemas/PlanningAgainstGame"
+              - $ref: "#/components/schemas/PlanningTogetherGame"
           minItems: 1
       required:
         - planningConfiguration
@@ -166,7 +166,7 @@ components:
         - pouleFilters
     PlanningAgainstGame:
       allOf:
-        - $ref: "#/components/schemas/GameProperties"
+        - $ref: "#/components/schemas/PlanningGameProperties"
       type: object
       properties:
         seats:
