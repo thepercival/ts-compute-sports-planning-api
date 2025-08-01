@@ -80,10 +80,18 @@
           ]
         }
       ],
-      "selfRefereeInfo": {
-        "selfReferee": "OtherPoules",
-        "nrOfReferees": 1
-      }
+      "selfReferee": [
+        {
+          "categoryNr": 1,
+          "scope": "OtherPoules",
+          "nrOfReferees": 1
+        },
+        {
+          "categoryNr": 2,
+          "scope": "SamePoule",
+          "nrOfReferees": 1
+        }
+      ]
     }
   ],
   "referees": [
