@@ -106,8 +106,5 @@
     }
   ],
   "gameOrder": "CycleFirst|PouleFirst default CycleFirst",
-  "maxNrOfGamesInARow": {
-    "withSelfReferee": false,
-    "value": 3
-  }
+  "nrGamesInARow": "max(default), examples : max, 3, 2, 1, -1, -2, -3, min, calculate Absolute Min & Max"
 }
