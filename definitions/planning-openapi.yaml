@@ -13,7 +13,7 @@ paths:
   /planning:
     post:
       operationId: generatePlanning
-      summary: Generate a planning based on configuration
+      summary: Generate a planning based on request parameters
       requestBody:
         required: true
         content:
@@ -63,14 +63,21 @@ components:
             $ref: "#/components/schemas/PlanningReferee"
         gameOrder:
           $ref: "#/components/schemas/GameOrderEnum"
-        nrOfGamesInARow:
-          type: integer
+        maxNrOfGamesInARow:
+          type: object
+          properties: 
+            forPlace: 
+              type: integer
+            includeSelfRefereePlaces: 
+              type: boolean
+            forReferee: 
+              type: integer
       required:
         - categories
         - sports
         - referees
         - gameOrder
-        - nrOfGamesInARow
+        - maxNrOfGamesInARow
     Planning:
       type: object
       properties:
@@ -102,9 +109,13 @@ components:
     PlanningSport:
       type: object
       properties:
+        sportNr:
+          type: integer
         seatConfigEnum:
           $ref: "#/components/schemas/SeatConfigEnum"
         nrOfCycles:
+          type: integer
+        nrOfCycleParts:
           type: integer
         nrOfRefereesPerGame:
           type: integer
@@ -113,22 +124,40 @@ components:
           items:
             $ref: "#/components/schemas/PlanningField"
           minItems: 1
-        selfRefereeInfo:
-          type: object
+        selfRefereeFilters:
+          type: array
           nullable: true
-          properties:
-            selfRefereeScope:
-              $ref: "#/components/schemas/SelfRefereeScopeEnum"
-            nrOfSeatsPerGame:
-              type: integer
-          required:
-            - selfRefereeScope
-            - nrOfSeatsPerGame
+          items:
+            $ref: "#/components/schemas/SelfRefereeFilter"
       required:
         - seatConfigEnum
         - nrOfCycles
+        - nrOfCycleParts
         - nrOfRefereesPerGame
-        - fields
+        - fields       
+    SelfRefereeFilter:
+      type: object
+      properties:
+        nrOfRefereesPerPlace:
+          type: integer
+        scope:
+          $ref: "#/components/schemas/SelfRefereeScopeEnum"
+        categoryNrs:
+          type: array
+          nullable: true
+          description: only used when scope is OtherPoules(SameCategory or OtherCategories)
+          items:
+            type: integer
+        pouleNrs:
+          type: array
+          nullable: true
+          description: only used when scope is SamePoule
+          items:
+            type: integer
+      required:
+        - nrOfRefereesPerPlace 
+        - scope
+
     TogetherSeat:
       type: object
       properties:
@@ -148,22 +177,27 @@ components:
         pouleFilters:
           type: array
           description: |
-            All poules will be used when:
-            - If no pouleFilters
-            - If no pouleNrs available
-            When pouleFilters are active all poules should be covered
+            There should be at least 1 item          
           items:
-            type: object
-            properties:
-              categoryNr:
-                type: integer
-              pouleNrs:
-                type: array
-                items:
-                  type: integer
+            $ref: "#/components/schemas/PlanningFieldFilter"
+          minItems: 1
       required:
         - fieldNr
         - pouleFilters
+    PlanningFieldFilter:
+      type: object
+      properties:
+        categoryNrs:
+          type: array
+          items:
+            type: integer
+        pouleNrs:
+          type: array
+          items:
+            type: integer
+      required:
+        - categoryNrs
+        - pouleNrs
     PlanningAgainstGame:
       allOf:
         - $ref: "#/components/schemas/PlanningGameProperties"
@@ -173,14 +207,14 @@ components:
           type: array
           items:
             anyOf:
-              - $ref: "#/components/schemas/HomeAwayEnum"
-              - $ref: "#/components/schemas/NorthSouthEastWestEnum"
+              - $ref: "#/components/schemas/HomeAwaySeatEnum"
+              - $ref: "#/components/schemas/NorthSouthEastWestSeatEnum"
         batchNr:
           type: integer
       required:
-        - batchNr
         - seats
-
+        - batchNr
+        
     PlanningTogetherGame:
       allOf:
         - $ref: "#/components/schemas/PlanningGameProperties"
@@ -211,23 +245,24 @@ components:
       properties:
         refereeNr:
           type: integer
-        filters:
+        categoryNrs:
           type: array
+          nullable: true
           description: |
-            All poules will be used when:
-            - If no pouleFilters
-            - If no pouleNrs available
-            When pouleFilters are active all poules should be covered
+            If undefined, all categories will be used, else the categories in the array will be assigned to
           items:
-            type: object
-            properties:
-              sportNr:
-                type: integer
-              categoryNr:
-                type: integer
+            type: integer
+        sportNrs:
+          type: array
+          nullable: true
+          description: |
+            If undefined, all sports will be assigned to, else the sports in the array will be assigned to
+          items:
+            type: integer
       required:
         - refereeNr
-        - filters
+        - categoryNrs
+        - sportNrs  
     PlanningPoule:
       type: object
       properties:
@@ -246,12 +281,12 @@ components:
         - pouleNr
         - places
 
-    HomeAwayEnum:
+    HomeAwaySeatEnum:
       type: string
       enum:
         - HomeSeat
         - AwaySeat
-    NorthSouthEastWestEnum:
+    NorthSouthEastWestSeatEnum:
       type: string
       enum:
         - NorthSeat
@@ -262,7 +297,8 @@ components:
       type: string
       enum:
         - SamePoule
-        - OtherPoules
+        - OtherPoulesSameCategory
+        - OtherPoulesOtherCategories
     GameOrderEnum:
       type: string
       enum:
