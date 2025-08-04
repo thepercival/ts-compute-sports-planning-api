@@ -68,10 +68,17 @@ components:
           properties: 
             forPlace: 
               type: integer
+              nullable: true
             includeSelfRefereePlaces: 
               type: boolean
+              nullable: true
             forReferee: 
               type: integer
+              nullable: true
+          required:
+            - forPlace
+            - includeSelfRefereePlaces
+            - forReferee
       required:
         - categories
         - sports
