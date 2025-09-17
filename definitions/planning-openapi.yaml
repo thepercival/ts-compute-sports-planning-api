@@ -55,16 +55,22 @@ components:
       in: header
       name: Authorization
   schemas:
-
-  
-  PlanningRequest:
+    PlanningRequest:
       type: object
       properties:
-        categories:
+        planningConfiguration:
           type: array
           items:
-            $ref: "#/components/schemas/PlanningCategory"
+            $ref: "#/components/schemas/PlanningConfiguration"
           minItems: 1
+        maxNrOfSeconds:
+          type: integer
+          description: Maximum number of seconds to compute the planning (default and maximum is 300 seconds)
+          default: 300
+          maximum: 300
+      required:
+        - planningConfiguration
+        - maxNrOfSeconds
 
     PlanningConfiguration:
       type: object
