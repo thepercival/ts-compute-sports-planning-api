@@ -1,33 +1,33 @@
 openapi: 3.0.3
 info:
-  title: Sports Planning API
+  title: Compute Sports Planning API
   version: 1.0.0
   license:
     name: GNU General Public License v3.0
     url: https://www.gnu.org/licenses/gpl-3.0.html
 servers:
-  - url: "https://api.sportsscheduler.nl/v1"
+  - url: "https://compute-api.sportsscheduler.nl/v1"
 security:
   - ApiKeyAuth: []
 paths:
   /planning:
     post:
-      operationId: generatePlanning
-      summary: Generate a planning based on request parameters
+      operationId: computePlanning
+      summary: computes a planning based on request parameters
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PlanningConfiguration"
+              $ref: "#/components/schemas/PlanningRequest"
       responses:
-        "200":
+        200:
           description: Planning result
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Planning"
-        "400":
+        400:
           description: Bad Request - Invalid input or malformed request
           content:
             application/json:
@@ -37,6 +37,17 @@ paths:
                   message:
                     type: string
                     description: Error message describing the bad request
+        408:           
+          description: Request Timeout (from PlanningRequest.maxNrOfSeconds)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the bad request
+                    
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -44,6 +55,17 @@ components:
       in: header
       name: Authorization
   schemas:
+
+  
+  PlanningRequest:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanningCategory"
+          minItems: 1
+
     PlanningConfiguration:
       type: object
       properties:
@@ -68,10 +90,17 @@ components:
           properties: 
             forPlace: 
               type: integer
+              nullable: true
             includeSelfRefereePlaces: 
               type: boolean
+              nullable: true
             forReferee: 
               type: integer
+              nullable: true
+          required:
+            - forPlace
+            - includeSelfRefereePlaces
+            - forReferee
       required:
         - categories
         - sports
@@ -176,14 +205,13 @@ components:
           type: integer
         pouleFilters:
           type: array
+          nullable: true
           description: |
             There should be at least 1 item          
           items:
             $ref: "#/components/schemas/PlanningFieldFilter"
-          minItems: 1
       required:
         - fieldNr
-        - pouleFilters
     PlanningFieldFilter:
       type: object
       properties:
